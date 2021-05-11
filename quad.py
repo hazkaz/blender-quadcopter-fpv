@@ -7,10 +7,10 @@ from mathutils import Vector, Euler, Quaternion, Matrix
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-class ModalTimerOperator(bpy.types.Operator):
+class QuadSimulator(bpy.types.Operator):
     """Operator which runs its self from a timer"""
-    bl_idname = "wm.modal_timer_operator"
-    bl_label = "Modal Timer Operator"
+    bl_idname = "wm.quad_simulator"
+    bl_label = "Quad Simulator"
 
     _timer = None
 
@@ -95,14 +95,14 @@ class ModalTimerOperator(bpy.types.Operator):
         self.js.quit()
 
 def menu_func(self,context):
-    self.layout.operator(ModalTimerOperator.bl_idname)
+    self.layout.operator(QuadSimulator.bl_idname)
 
 def register():
-    bpy.utils.register_class(ModalTimerOperator)
+    bpy.utils.register_class(QuadSimulator)
     bpy.types.VIEW3D_MT_object.append(menu_func)
 
 def unregister():
-    bpy.utils.unregister_class(ModalTimerOperator)
+    bpy.utils.unregister_class(QuadSimulator)
 
 
 if __name__ == "__main__":

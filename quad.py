@@ -1,3 +1,16 @@
+bl_info = {
+    "name": "Quadcopter FPV Simulator",
+    "author": "WizardOfRobots",
+    "version": (1, 0),
+    "blender": (2, 80, 0),
+    "location": "View > Navigation > Quadcopter Mode",
+    "description": "Fly any object/camera like a quadcopter FPV pilot",
+    "warning": "Has Dependencies. Permission Needed. Controller/Gamepad required",
+    "doc_url": "https://github.com/hazkaz/blender-fpv",
+    "category": "Simulator",
+}
+
+
 import bpy
 import os
 import time
@@ -8,9 +21,9 @@ from mathutils import Vector, Euler, Quaternion, Matrix
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 class QuadSimulator(bpy.types.Operator):
-    """Operator which runs its self from a timer"""
+    """Modal Operator which runs once every frame"""
     bl_idname = "wm.quad_simulator"
-    bl_label = "Quad Simulator"
+    bl_label = "Quadcopter Mode"
 
     _timer = None
 
@@ -24,8 +37,9 @@ class QuadSimulator(bpy.types.Operator):
         self.fps = 30
         self.last_time=0
         self.max_thrust = 1
+
         
-    def get_controller_vals(self):
+    def _get_controller_vals(self):
             pitch_val = self.js.get_axis(1)
             roll_val = self.js.get_axis(0)
             yaw_val = self.js.get_axis(3)
@@ -39,11 +53,11 @@ class QuadSimulator(bpy.types.Operator):
 
         if event.type == 'TIMER':
             ctime = time.perf_counter()
-#            print(ctime - self.last_time,1.0/self.fps)
+            #print(ctime - self.last_time,1.0/self.fps)
             if (ctime - self.last_time) >= (1.0/self.fps):
                 self.last_time = time.perf_counter()                  
                 pygame.event.pump()               
-                pitch_val,roll_val,throttle_val,yaw_val = self.get_controller_vals()
+                pitch_val,roll_val,throttle_val,yaw_val = self._get_controller_vals()
                 throttle_val +=1.0            
                 
                 # rotation            
@@ -94,8 +108,34 @@ class QuadSimulator(bpy.types.Operator):
         wm.event_timer_remove(self._timer)
         self.js.quit()
 
+
 def menu_func(self,context):
     self.layout.operator(QuadSimulator.bl_idname)
+
+class QuadConfigPanel(bpy.types.Panel):
+    """Configure the QuadSimulator"""
+    bl_label = "Hello World Panel"
+    bl_idname = "OBJECT_PT_hello"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "object"
+
+    def draw(self, context):
+        layout = self.layout
+
+        obj = context.object
+
+        row = layout.row()
+        row.label(text="Hello world!", icon='WORLD_DATA')
+
+        row = layout.row()
+        row.label(text="Active object is: " + obj.name)
+        row = layout.row()
+        row.prop(obj, "name")
+
+        row = layout.row()
+        row.operator("mesh.primitive_cube_add")
+
 
 def register():
     bpy.utils.register_class(QuadSimulator)
@@ -103,8 +143,9 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(QuadSimulator)
+    bpy.utils.unregister_manual_map(add_object_manual_map)
+    bpy.types.VIEW3D_MT_mesh_add.remove(add_object_button)
 
 
 if __name__ == "__main__":
     register()
-

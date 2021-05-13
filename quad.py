@@ -13,7 +13,7 @@ bl_info = {
     "location": "View > Navigation > Quadcopter Mode",
     "description": "Fly any object/camera like a quadcopter FPV pilot",
     "warning": "Has Dependencies. Permission Needed. Controller/Gamepad required",
-    "doc_url": "https://github.com/hazkaz/blender-fpv",
+    "doc_url": "https://github.com/hazkaz/blender-quadcopter-fpv",
     "category": "Simulator",
 }
 
@@ -55,7 +55,7 @@ class QuadcopterSimulator(bpy.types.Operator):
         if event.type == 'TIMER':
             ctime = time.perf_counter()
             delta_time = ctime - self.last_time
-            print(delta_time)
+            # print(delta_time)
             #print(ctime - self.last_time,1.0/self.fps)
             if (delta_time) >= (1.0/self.fps):
                 self.last_time = time.perf_counter()
@@ -66,7 +66,7 @@ class QuadcopterSimulator(bpy.types.Operator):
                 # rotation
                 inverted_world_vector = self.cam.matrix_world.inverted()
                 rotation_vect = Vector(
-                    map(lambda x: x*0.1, (pitch_val, yaw_val, roll_val)))
+                    map(lambda x: x*0.2, (pitch_val, yaw_val, roll_val)))
                 rotation_axis = -rotation_vect @ inverted_world_vector
 
                 # thrust
@@ -130,6 +130,7 @@ class QuadcopterConfigPanel(bpy.types.Panel):
         row = layout.row()
         row.prop(context.window_manager,'quadcopter_mode',text="Quadcopter Mode", icon='ORIENTATION_GIMBAL',toggle=True)
 
+def 
 
 _classes = [
     QuadcopterSimulator,

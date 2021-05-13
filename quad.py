@@ -1,3 +1,6 @@
+from ensure_dependencies import ensure_deps
+ensure_deps()
+
 from mathutils import Vector, Euler, Quaternion, Matrix
 from bpy.utils import register_class, unregister_class
 from math import radians

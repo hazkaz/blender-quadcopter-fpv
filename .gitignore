@@ -1,3 +1,5 @@
 **/*.avi
 **/*.blend*
 **/*.zip
+**/__pycache__/
+**/*.pyc

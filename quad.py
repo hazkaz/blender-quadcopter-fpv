@@ -30,14 +30,14 @@ class QuadcopterSimulator(bpy.types.Operator):
 
     def __init__(self):
         super().__init__()
-        self.cam_angle = radians(90 - 0)
+        self.cam_angle = radians(90 - 5)
         self.force_vect = Vector((0, 0, 0))
         self.velocity = Vector((0, 0, 0))
         self.air_resistance_factor = Vector((0.3, 0.3, 0.3))
-        self.quadcopter_mass = 0.2
-        self.fps = 1
+        self.quadcopter_mass = 1
+        self.fps = 30
         self.last_time = 0
-        self.max_thrust = 1
+        self.max_thrust = 30
 
     def _get_controller_vals(self):
         pitch_val = self.js.get_axis(1)
@@ -54,8 +54,10 @@ class QuadcopterSimulator(bpy.types.Operator):
 
         if event.type == 'TIMER':
             ctime = time.perf_counter()
+            delta_time = ctime - self.last_time
+            print(delta_time)
             #print(ctime - self.last_time,1.0/self.fps)
-            if (ctime - self.last_time) >= (1.0/self.fps):
+            if (delta_time) >= (1.0/self.fps):
                 self.last_time = time.perf_counter()
                 pygame.event.pump()
                 pitch_val, roll_val, throttle_val, yaw_val = self._get_controller_vals()
@@ -69,17 +71,17 @@ class QuadcopterSimulator(bpy.types.Operator):
 
                 # thrust
                 thrust_vect = Vector((0, 0, throttle_val))*self.max_thrust
-                gravity_vect = Vector((0, 0, -9.8))*self.quadcopter_mass
+                gravity_vect = Vector((0, 0, -9.8))
                 thrust_vect.rotate(Euler((self.cam_angle, 0, 0)))
                 thrust_vect = -thrust_vect @ inverted_world_vector
                 thrust_vect /= self.quadcopter_mass
                 net_force_vect = thrust_vect+gravity_vect
                 self.force_vect = net_force_vect
-                self.velocity += self.force_vect*self.air_resistance_factor*0.01
+                self.velocity += (self.force_vect*delta_time)
 
                 self.cam.rotation_euler.rotate(Quaternion(
                     rotation_axis, rotation_vect.magnitude))
-                self.cam.location += self.velocity
+                self.cam.location += (self.velocity*delta_time)
                 if self.record == True:
                     self.cam.keyframe_insert(data_path="location", index=-1)
                     self.cam.keyframe_insert(
@@ -92,6 +94,7 @@ class QuadcopterSimulator(bpy.types.Operator):
         print(self.fps)
         self._timer = wm.event_timer_add(1/self.fps, window=context.window)
         wm.modal_handler_add(self)
+        self.last_time = time.perf_counter()
         return {'RUNNING_MODAL'}
 
     def invoke(self, context, event):

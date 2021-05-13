@@ -1,0 +1,27 @@
+name: Package Addon
+
+on:
+  push:
+    tags: 
+      - '*'
+  pull_request:
+    tags: 
+      - '*'
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout
+      - uses: actions/checkout@v2
+      - name: package into a zip
+        run: python3 package.py
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Quadcopter-addon.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

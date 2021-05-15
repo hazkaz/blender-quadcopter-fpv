@@ -7,6 +7,13 @@
 
 <br>
 
-This addon simulates quadcopter physics in real time and allows you to fly untethered with your camera. Run the script, attach your gamepad and run the add-on using F3 and search for 
+This addon simulates quadcopter physics in real time and allows you to fly untethered with your camera. 
+1. Download ![the zip file](https://github.com/hazkaz/blender-quadcopter-fpv/releases/download/v0.0.2/Quadcopter-addon.zip)
+2. Install dependency of pygame
+3. Make sure your camera is labeled "Camera" in Blender
+4. Press 'N' on the 3D Viewport to toggle the sidebar.
+5. Enable Quadcopter mode and get to ripping in virtual 3d scenes
+6. Press the auto-record and press play if you want to record your flight as
 
-![FPV footage of Suzzanne Falling](https://github.com/hazkaz/blender-fpv/raw/master/blender-fpv1.gif)
+
+![FPV footage of a bando in Blender](https://github.com/hazkaz/blender-fpv/raw/master/ripping.gif)

@@ -1,25 +1,11 @@
-from ensure_dependencies import ensure_deps
-ensure_deps()
-
-from mathutils import Vector, Euler, Quaternion, Matrix
-from bpy.utils import register_class, unregister_class
-from math import radians
-import pygame
-import time
-import os
 import bpy
-bl_info = {
-    "name": "Quadcopter FPV Simulator",
-    "author": "WizardOfRobots",
-    "version": (1, 0),
-    "blender": (2, 80, 0),
-    "location": "View > Navigation > Quadcopter Mode",
-    "description": "Fly any object/camera like a quadcopter FPV pilot",
-    "warning": "Has Dependencies. Permission Needed. Controller/Gamepad required",
-    "doc_url": "https://github.com/hazkaz/blender-quadcopter-fpv",
-    "category": "Simulator",
-}
-
+import os
+import time
+import sys
+from math import radians
+from bpy.utils import register_class, unregister_class
+from mathutils import Vector, Euler, Quaternion, Matrix
+from quad_simulator import bl_info,dependencies
 
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -126,14 +112,16 @@ class QuadcopterConfigPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "Quadcopter"
+    
 
     def draw(self, context):
         layout = self.layout
         obj = context.object
-        row = layout.row()
-        row.prop(context.window_manager,'quadcopter_mode',text="Quadcopter Mode", icon='ORIENTATION_GIMBAL',toggle=True)
 
-def 
+        row = layout.row()
+        row.prop(context.window_manager, 'quadcopter_mode',
+                 text="Quadcopter Mode", icon='ORIENTATION_GIMBAL', toggle=True)
+
 
 _classes = [
     QuadcopterSimulator,
@@ -145,24 +133,23 @@ def menu_func(self, context):
     self.layout.operator(QuadcopterSimulator.bl_idname)
 
 
-def update_function(self,context):
+def update_function(self, context):
     if self.quadcopter_mode:
         bpy.ops.wm.quadcopter_mode('INVOKE_DEFAULT')
     return
 
 
-def register():
+def register_quad():
+    globals()['pygame']=sys.modules[modulesNames['ensure_dependencies']].pygame
     for cls in _classes:
         register_class(cls)
     bpy.types.VIEW3D_MT_object.append(menu_func)
-    bpy.types.WindowManager.quadcopter_mode = bpy.props.BoolProperty(default=False,update=update_function)
+    bpy.types.WindowManager.quadcopter_mode = bpy.props.BoolProperty(
+        default=False, update=update_function)
 
 
-def unregister():
+def unregister_quad():
     for cls in _classes:
         unregister_class(cls)
     bpy.types.VIEW3D_MT_object.remove(menu_func)
-
-
-if __name__ == "__main__":
-    register()
+    pygame.quit()

@@ -17,20 +17,14 @@
 #    Modifications were made to the original source code written by Robert Guetzkow
 #    Modified software is being release under GPLv3, so the same conditions as above apply
 
+
 import bpy
 import os
 import sys
 import subprocess
 import importlib
-from collections import namedtuple
+from quad_simulator import dependencies,bl_info
 
-Dependency = namedtuple("Dependency", ["module", "package", "name"])
-
-# Declare all modules that this add-on depends on, that may need to be installed. The package and (global) name can be
-# set to None, if they are equal to the module name. See import_module and ensure_and_import_module for the explanation
-# of the arguments. DO NOT use this to import other parts of your Python add-on, import them as usual with an
-# "import" statement.
-dependencies = (Dependency(module="pygame", package=None, name=None),)
 
 dependencies_installed = False
 
@@ -46,9 +40,11 @@ def import_module(module_name, global_name=None, reload=True):
     """
     if global_name is None:
         global_name = module_name
-
     if global_name in globals():
-        importlib.reload(globals()[global_name])
+        try:
+            importlib.reload(globals()[global_name])
+        except AttributeError:
+                pass
     else:
         # Attempt to import the module and assign it to globals dictionary. This allow to access the module under
         # the given name, just like the regular import would.
@@ -112,7 +108,7 @@ def install_and_import_module(module_name, package_name=None, global_name=None):
 
 class EXAMPLE_PT_warning_panel(bpy.types.Panel):
     bl_label = "Example Warning"
-    bl_category = "Example Tab"
+    bl_category = "Quadcopter"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
 
@@ -142,7 +138,7 @@ class EXAMPLE_PT_warning_panel(bpy.types.Panel):
 
 
 class EXAMPLE_OT_install_dependencies(bpy.types.Operator):
-    bl_idname = "example.install_dependencies"
+    bl_idname = "quad_simulator.install_dependencies"
     bl_label = "Install dependencies"
     bl_description = ("Downloads and installs the required python packages for this add-on. "
                       "Internet connection is required. Blender may have to be started with "
@@ -169,14 +165,13 @@ class EXAMPLE_OT_install_dependencies(bpy.types.Operator):
         dependencies_installed = True
 
         # Register the panels, operators, etc. since dependencies are installed
-        for cls in classes:
-            bpy.utils.register_class(cls)
+        sys.modules[modulesNames['quad']].register_quad()
 
         return {"FINISHED"}
 
 
 class EXAMPLE_preferences(bpy.types.AddonPreferences):
-    bl_idname = __name__
+    bl_idname = __package__
 
     def draw(self, context):
         layout = self.layout
@@ -188,7 +183,13 @@ preference_classes = (EXAMPLE_PT_warning_panel,
                       EXAMPLE_preferences)
 
 
-def install():
+
+preference_classes = (EXAMPLE_PT_warning_panel,
+                      EXAMPLE_OT_install_dependencies,
+                      EXAMPLE_preferences)
+
+
+def register():
     global dependencies_installed
     dependencies_installed = False
 
@@ -196,9 +197,19 @@ def install():
         bpy.utils.register_class(cls)
 
     try:
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
         for dependency in dependencies:
             import_module(module_name=dependency.module, global_name=dependency.name)
         dependencies_installed = True
     except ModuleNotFoundError:
         # Don't register other panels, operators etc.
         return
+
+    sys.modules[modulesNames['quad']].register_quad()
+
+def unregister():
+    for cls in preference_classes:
+        bpy.utils.unregister_class(cls)
+
+    if dependencies_installed:
+        sys.modules[modulesNames['quad']].unregister_quad()
